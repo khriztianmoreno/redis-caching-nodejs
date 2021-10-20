@@ -1,10 +1,6 @@
 const express = require('express');
 const axios = require('axios');
-// const redis = require('redis');
 const responseTime = require('response-time');
-const {
-  promisify
-} = require('util');
 
 const RedisService = require('./redis-service');
 
@@ -12,7 +8,7 @@ const RedisService = require('./redis-service');
 const app = express();
 
 // redis client
-const client = new RedisService()
+const client = new RedisService();
 
 // Add response time header
 app.use(responseTime());
@@ -47,9 +43,7 @@ app.get('/characters', async (req, res) => {
 });
 
 app.get('/characters/:id', async (req, res) => {
-  const {
-    id
-  } = req.params;
+  const { id } = req.params;
   try {
     const reply = await client.get(req.originalUrl);
 
@@ -74,15 +68,13 @@ app.get('/characters/:id', async (req, res) => {
   } catch (error) {
     const {
       message,
-      response: {
-        status
-      }
-    } = error
+      response: { status },
+    } = error;
     console.log(error);
     res.status(status).json(message);
   }
 });
 
-app.listen(3000, () => {
+app.listen(process.env.PORT, () => {
   console.log('Listening on port 3000');
 });
