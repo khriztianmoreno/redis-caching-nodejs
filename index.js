@@ -1,20 +1,18 @@
 const express = require('express');
 const axios = require('axios');
-const redis = require('redis');
+// const redis = require('redis');
 const responseTime = require('response-time');
 const {
   promisify
 } = require('util');
 
+const RedisService = require('./redis-service');
+
 // Create the express app
 const app = express();
 
 // redis client
-const client = redis.createClient();
-
-// Promisifying Get and set methods
-const GET_ASYNC = promisify(client.get).bind(client);
-const SET_ASYNC = promisify(client.set).bind(client);
+const client = new RedisService()
 
 // Add response time header
 app.use(responseTime());
@@ -23,7 +21,7 @@ app.use(responseTime());
 app.get('/characters', async (req, res) => {
   try {
     // Search Data in Redis
-    const reply = await GET_ASYNC('characters');
+    const reply = await client.get('characters');
 
     // if exists returns from redis and finish with response
     if (reply) return res.send(JSON.parse(reply));
@@ -34,7 +32,7 @@ app.get('/characters', async (req, res) => {
     );
 
     // Saving the results in Redis. The 'EX' and 10, sets an expiration of 10 Seconds
-    const saveResult = await SET_ASYNC(
+    const saveResult = await client.set(
       'characters',
       JSON.stringify(response.data),
       'EX',
@@ -53,7 +51,7 @@ app.get('/characters/:id', async (req, res) => {
     id
   } = req.params;
   try {
-    const reply = await GET_ASYNC(req.originalUrl);
+    const reply = await client.get(req.originalUrl);
 
     if (reply) {
       console.log('using cached data');
@@ -63,7 +61,7 @@ app.get('/characters/:id', async (req, res) => {
     const response = await axios.get(
       `https://rickandmortyapi.com/api/character/${id}`
     );
-    const saveResult = await SET_ASYNC(
+    const saveResult = await client.set(
       req.originalUrl,
       JSON.stringify(response.data),
       'EX',
