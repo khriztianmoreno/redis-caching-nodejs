@@ -3,3 +3,12 @@ GET http://localhost:3000/characters
 
 ### Single character
 GET http://localhost:3000/characters/1
+
+
+## Heroku
+
+### Get all chracters
+GET https://redis-example-nodejs-top-v10.herokuapp.com/characters
+
+### Single character
+GET https://redis-example-nodejs-top-v10.herokuapp.com/characters/1
